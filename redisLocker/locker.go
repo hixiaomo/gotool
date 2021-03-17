@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/go-redis/redis/v8"
-	"log"
 	"time"
 )
 
@@ -60,7 +59,6 @@ func (this *Locker) Lock() *Locker {
 		panic(fmt.Sprintf("lock error with key:%s", this.key))
 	}
 	this.expandLockTime()
-	fmt.Println("加锁成功")
 	return this
 }
 func (this *Locker) expandLockTime() {
@@ -79,12 +77,12 @@ func (this *Locker) expandLockTime() {
 //重新设置过期时间
 func (this *Locker) resetExpire() {
 	cmd := this.incrScript.Run(context.Background(), this.redisClient, []string{this.key}, 1, this.expire.Seconds())
-	v, err := cmd.Result()
-	log.Printf("key=%s ,续期结果:%v,%v\n", this.key, err, v)
+	cmd.Result()
+
 }
 
 func (this *Locker) Unlock() {
 	this.unlock = true
 	this.redisClient.Del(context.Background(), this.key)
-	fmt.Println("解锁成功")
+
 }
